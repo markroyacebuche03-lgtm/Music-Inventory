@@ -1,0 +1,111 @@
+BAND SYNC - SETUP GUIDE
+=======================
+
+What your band gets
+-------------------
+A new person only has to REGISTER WITH THEIR EMAIL (and a password). Then they
+search for a friend by email and tap "Add friend". The friend sees a floating
+card, taps Accept, and from then on you appear in each other's org chart and
+your songs and setlists stay in sync (the same song from two people is kept
+once, and each song shows who added it).
+
+Everyone except the person who hosts the app does NOTHING else: no settings to
+paste, no rules, no codes, no links.
+
+The host does this ONE TIME (about 10 minutes). It uses Firebase, Google's
+free service (the "Spark" plan is plenty for a church band).
+
+HOST SETUP (one time)
+---------------------
+1. Go to https://console.firebase.google.com, sign in with Google, click
+   "Create a project", name it (for example "Key Inventory"). You can turn
+   Google Analytics off.
+
+2. Turn on sign-in:  Authentication > Get started > Sign-in method >
+   Email/Password > switch "Enable" on > Save.
+
+3. Make the database:  Firestore Database (it may be under "Databases &
+   Storage") > Create database > keep "Production mode" > pick a location near
+   you > Create.
+
+4. Publish the rules. Open the file  firestore.rules  from this folder on your
+   computer (Notepad is fine), press Ctrl+A then Ctrl+C. In Firebase go to
+   Firestore Database > Rules tab, delete what is there, press Ctrl+V, and
+   click "Publish".
+
+5. Get your project's settings:  click Settings (gear, left menu) > General >
+   scroll to "Your apps" > click the web icon </> > give it any nickname >
+   Register app. Firebase shows a block like:
+
+       const firebaseConfig = {
+         apiKey: "AIza...",
+         authDomain: "your-project.firebaseapp.com",
+         projectId: "your-project",
+         storageBucket: "your-project.firebasestorage.app",
+         messagingSenderId: "1234567890",
+         appId: "1:1234567890:web:abcdef"
+       };
+
+6. Open  firebase.js  from this folder (Notepad). Replace each PASTE_... value
+   with the matching value from the block (keep the quote marks). Save.
+
+7. Upload  index.html  and  firebase.js  TOGETHER to your website (Netlify,
+   GitHub Pages, ...). Open the website address (https://...). Done: anybody
+   who opens it can register.
+
+OPTIONAL: Firebase Hosting (no firebase.js to fill in at all)
+-------------------------------------------------------------
+If you host the app on Firebase Hosting, the app finds your project's settings
+by itself (steps 5 and 6 are not needed). With the Firebase tools installed,
+run "firebase deploy" in this folder: it publishes the website AND the rules
+(firebase.json and firestore.rules are included for that).
+
+What your friends see
+---------------------
+- A floating card appears when someone adds them, with Accept and Decline (the
+  small x only hides it for now; the request stays in Settings > Band & sync).
+- If they decline, the person who asked gets a cheerful card ("Joel is not ready
+  just yet ... keep going!"), not a plain "no".
+- When a friend opens Play mode for a setlist, everyone else sees moving sound
+  bars and "Joel started playing <setlist>" (with a Join button) at the top of
+  the sidebar, in the Setlist list and in Play mode. It disappears when they stop.
+- The tutorial (Settings > Tutorial) has animated scenes for registering, adding
+  a friend and the org chart. The rule it teaches: let ONE person (usually the
+  worship leader) add everyone, so the whole band ends up in ONE org chart.
+
+Good to know
+------------
+- Songs from friends are combined on every device and saved there too. The
+  same song (same title, same artist or no artist written) is kept once, with
+  everyone's singers and keys put together.
+- Songs show "Added by <name>" when a friend added them.
+- Everyone in a band can see and change the band's songs and setlists. The
+  newest change wins if two people edit the same song at the same moment.
+- Your nickname starts as the first word of your email (anna.lee@... becomes
+  Anna). Change it any time in Settings > Band & sync > "You". Use ONE short word
+  your friends will recognize (Maria, PastorJo): it shows on the org chart and as
+  "Added by" on songs, and long ones are shortened there. You can also choose
+  your part in the band (guitarist, drummer, ...) there.
+- Friends are found by exact email only; nobody can browse a list of people.
+- If you are already in a band with friends and someone else asks you, you can
+  accept; if you are on your own, it is instant. If you are in a band with
+  other people, the app asks before you switch.
+- The settings in firebase.js are not secret passwords. They only point the app
+  to your project. Sign-in and the rules protect the data.
+- Costs: the free Firebase plan is far above what a church band uses.
+
+If something does not work
+--------------------------
+- Tap "Check connection" (Settings > Band & sync, under the sign-in form). It
+  says in plain words which step fails.
+- "No connection to the online service": open the app from your website
+  address (https://...), not by double-clicking index.html on your computer
+  (sign-in does not work from a file). Then check the values in firebase.js,
+  and try mobile data or another browser (Wi-Fi, ad blockers or a VPN can block
+  Google).
+- "Email sign-in is not switched on": do step 2 again.
+- "The online database refused access": do step 4 again and press Publish.
+- "Nobody has registered with that email yet": your friend must register first;
+  check the spelling.
+- The app says sync is "not switched on yet": firebase.js still has its PASTE_
+  values, or was not uploaded next to index.html.
