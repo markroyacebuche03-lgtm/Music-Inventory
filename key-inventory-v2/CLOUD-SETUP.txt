@@ -1,0 +1,137 @@
+BAND SYNC - SETUP GUIDE (ACCOUNTS, FRIENDS AND AN ORG CHART)
+============================================================
+
+What you get
+------------
+It works like adding friends:
+ 1. Everyone registers in the app with their email and a password.
+ 2. Right after registering, the app asks "What part of the band are you?"
+    (Worship leader, Vocalist, Guitarist, Bassist, Drummer, Keyboardist, Sound
+    tech, Media / Slides, or your own). It is saved on the person's account.
+ 3. In Settings > Band & sync, a person adds a friend by typing the email the
+    friend registered with. The friend gets a request.
+ 4. When the friend taps Accept, they appear in each other's ORG CHART (a person
+    who adds a guitarist sees the guitarist on their chart, and the guitarist
+    sees them), and their songs and setlists stay in step, usually within a
+    couple of seconds. Friends of friends join the same chart.
+The app still works without internet: it keeps a copy on each device and
+catches up when the connection comes back.
+
+You do this setup ONCE for the whole band (about 10 minutes). It uses Firebase,
+Google's service. The free plan ("Spark") is plenty for a church band.
+
+Part 1 - Make the online place (one person, once)
+-------------------------------------------------
+1. Go to https://console.firebase.google.com and sign in with a Google account.
+2. Click "Create a project" (or "Add project"). Give it a name, for example
+   "Key Inventory". You can turn Google Analytics off. Click Create.
+3. Turn on sign-in:
+   Build > Authentication > Get started > Sign-in method > Email/Password >
+   switch "Enable" on > Save.
+4. Make the database:
+   Build > Firestore Database > Create database > keep "Production mode" >
+   choose a location near you > Enable.
+5. Set the rules (this decides who can use the database):
+   In Firestore Database, open the "Rules" tab. Delete everything there, paste
+   the rules below, and click "Publish".
+
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /users/{uid} {
+         allow read, write: if request.auth != null && request.auth.uid == uid;
+         match /invites/{from} {
+           allow create: if request.auth != null && request.auth.uid == from;
+           allow read, delete: if request.auth != null && (request.auth.uid == uid || request.auth.uid == from);
+         }
+       }
+       match /emails/{h} {
+         allow get: if request.auth != null;
+         allow create, update: if request.auth != null && request.resource.data.uid == request.auth.uid;
+       }
+       match /workspaces/{band}/{document=**} {
+         allow read, write: if request.auth != null;
+       }
+     }
+   }
+
+   (The app also shows these rules, with a Copy button, in Settings.)
+   Tip: after publishing, open the "Rules playground" or just try the app with
+   two accounts; if something says "refused access", the rules were not
+   published or were pasted incompletely.
+6. Get the settings block:
+   Click the gear next to "Project Overview" > Project settings > scroll to
+   "Your apps" > click the web icon  </>  > give it a nickname > Register app.
+   Firebase shows a block starting with  const firebaseConfig = { ... };
+   Copy that whole block.
+
+Part 2 - Connect the app (same person)  - TWO WAYS, pick one
+------------------------------------------------------------
+CLEANEST (recommended): build the settings into the app file, once.
+  Open index.html in any text editor (Notepad is fine), search for
+  BUILT_IN_FIREBASE, and replace   null   with the block's inside, like this:
+
+     const BUILT_IN_FIREBASE = { apiKey: "...", authDomain: "...", projectId: "...", appId: "..." };
+
+  Upload the file again to your website. From then on nobody on your band sees
+  any setup: everyone just registers.
+
+OR, without editing the file:
+  1. Open the app (your website) > Settings (the gear) > Band & sync.
+  2. Tap "Set up band sync", paste the block from step 6, and tap
+     "Save and continue".
+  3. To bring a friend in, tap "Copy a setup link for a friend" and send it.
+     They open the link and only have to create their account.
+
+Part 3 - Build the org chart
+----------------------------
+1. Register: tap "Create account", type your name, email and a password.
+2. Choose your part in the band.
+3. In "Add a friend", type the email your friend registered with, tap "Add
+   friend". They see "<your name> added you to their org chart" in their
+   Settings > Band & sync, with Accept and Not now.
+4. After they accept, both of you see each other on the org chart, and your
+   songs and setlists are shared. If the friend already has songs on their
+   device, the app asks whether to COMBINE them with the band's songs or use
+   ONLY the band's. Choose "Combine both" when unsure: nothing is lost.
+5. Anyone can add friends. The org chart shows who added whom. You can take out
+   (x) the people you added, or cancel a request that has not been accepted.
+   "Leave band" stops syncing on your device (your songs stay on it).
+
+Good to know
+------------
+- Friends are found by exact email only. Nobody can browse a list of people.
+- Everyone in a band sees the band's songs and setlists and can change them.
+  The newest change wins if two people edit the same song at the same moment;
+  your screen is left alone while you are editing a song.
+- "Last changed by" is saved on every song and setlist.
+- Changing your name or part updates it on everyone's org chart.
+- Songs are combined, never doubled: when friends connect, every song from each
+  device is added to the other, and a song you both have (the same title, and
+  the same artist unless one of you left the artist empty) is kept only once.
+  Nothing is lost: the singers and keys, lyrics and details from both copies
+  are put together, and any setlist that used the other copy points to the one
+  that stays. All songs are saved on each person's own device too, so they are
+  still there offline, and if someone leaves the band.
+- Songs that came from a friend show a small "Added by <name>" tag in the song
+  list, on the song page and on the Songs overview. Songs you added yourself have
+  no tag. If two friends both had the same song, it shows the first person's name
+  and "+1" (tap or hover it to see the others).
+- Someone who is in another band is asked before switching to a new one.
+- Restoring a backup while synced replaces the band's songs too. The app warns
+  you first.
+- Costs: the free Firebase plan has generous daily limits, far above what a
+  church band uses. Singer pictures are stored in the database as small images.
+- Security note: the band's data is protected by sign-in, and each band lives
+  under a long secret id that only members are told. For a small church band
+  that is a good fit. It is not designed for secret or paid content.
+
+If something does not work
+--------------------------
+- "Email sign-in is not switched on": do step 3 of Part 1.
+- "The online database refused access": do step 5 of Part 1 and press Publish.
+- "Nobody has registered with that email yet": your friend must create their
+  account in the app first; check the spelling of the email.
+- Status says "Offline": no internet. Keep working; it syncs when you are back.
+- Changed projects or settings by mistake: Settings > Band & sync > "Use
+  different online settings".
