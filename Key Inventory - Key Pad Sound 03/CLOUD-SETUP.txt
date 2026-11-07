@@ -1,0 +1,219 @@
+BAND SYNC - SETUP GUIDE
+=======================
+
+What your band gets
+-------------------
+A new person only has to REGISTER WITH THEIR EMAIL (and a password). Then they
+search for a friend by email and tap "Add friend". The friend sees a floating
+card, taps Accept, and from then on you appear in each other's band members list and
+your songs and setlists stay in sync (the same song from two people is kept
+once, and each song shows who added it).
+
+Everyone except the person who hosts the app does NOTHING else: no settings to
+paste, no rules, no codes, no links.
+
+The host does this ONE TIME (about 10 minutes). It uses Firebase, Google's
+free service (the "Spark" plan is plenty for a church band).
+
+HOST SETUP (one time)
+---------------------
+1. Go to https://console.firebase.google.com, sign in with Google, click
+   "Create a project", name it (for example "Key Inventory"). You can turn
+   Google Analytics off.
+
+2. Turn on sign-in:  Authentication > Get started > Sign-in method >
+   Email/Password > switch "Enable" on > Save.
+
+3. Make the database:  Firestore Database (it may be under "Databases &
+   Storage") > Create database > keep "Production mode" > pick a location near
+   you > Create.
+
+4. Publish the rules. Open the file  firestore.rules  from this folder on your
+   computer (Notepad is fine), press Ctrl+A then Ctrl+C. In Firebase go to
+   Firestore Database > Rules tab, delete what is there, press Ctrl+V, and
+   click "Publish".
+
+5. Get your project's settings:  click Settings (gear, left menu) > General >
+   scroll to "Your apps" > click the web icon </> > give it any nickname >
+   Register app. Firebase shows a block like:
+
+       const firebaseConfig = {
+         apiKey: "AIza...",
+         authDomain: "your-project.firebaseapp.com",
+         projectId: "your-project",
+         storageBucket: "your-project.firebasestorage.app",
+         messagingSenderId: "1234567890",
+         appId: "1:1234567890:web:abcdef"
+       };
+
+6. Open  firebase.js  from this folder (Notepad). Replace each PASTE_... value
+   with the matching value from the block (keep the quote marks). Save.
+
+7. Upload  index.html  and  firebase.js  TOGETHER to your website (Netlify,
+   GitHub Pages, ...). Open the website address (https://...). Done: anybody
+   who opens it can register.
+
+OPTIONAL: Firebase Hosting (no firebase.js to fill in at all)
+-------------------------------------------------------------
+If you host the app on Firebase Hosting, the app finds your project's settings
+by itself (steps 5 and 6 are not needed). With the Firebase tools installed,
+run "firebase deploy" in this folder: it publishes the website AND the rules
+(firebase.json and firestore.rules are included for that).
+
+What your friends see
+---------------------
+- A floating card appears when someone adds them, with Accept and Decline (the
+  small x only hides it for now; the request stays in Settings > Band & sync).
+- If they decline, the person who asked gets a cheerful card ("Joel is not ready
+  just yet ... keep going!"), not a plain "no".
+- When a friend opens Play mode for a setlist, everyone else (and your other devices signed in as
+  you) sees: a short notice at the top of the sidebar ("Joel is playing"; tap it for details), a
+  pulsing yellow Join button beside Play, and just the sound bars on the setlist's card. Tap Join and
+  your Play mode follows the player: whenever they open another group or song, or go back to the
+  tiles, yours does too (key changes they make arrive by normal sync). You can look around on your
+  own; the next time they move you snap back. Tap Stop in the pill at the top of Play mode (or leave
+  Play mode) to stop following.
+- When you open the app (or come back to it) while someone is playing, a pop-up appears and lists
+  EVERY player on its own card: who is playing, which setlist, how long they have been playing, who is
+  with them, and a Join button for that player. It shows once per playing session, and not while you
+  are already in Play mode.
+- If more than one setlist is being played (by different people), Join first asks "Who do you want
+  to follow?" and lists each player with the setlist, how long they have been playing and who is
+  with them. If only one person is playing, Join goes straight in.
+- Phone alerts for this are short: "Joel is playing" and the setlist name.
+- While someone is playing a setlist, that setlist is locked for editing for everyone else: songs
+  cannot be added, moved or removed, and it cannot be renamed, cleared or deleted. A note explains
+  it and offers "Open Play mode", where you can still change the song, singer or key. It unlocks
+  when the player leaves Play mode (or about a minute after their phone goes quiet).
+- The tutorial (Settings > Tutorial) has animated scenes for registering, adding
+  a friend and the band members list. The rule it teaches: let ONE person (usually the
+  worship leader) add everyone, so the whole band ends up in ONE band members list.
+
+Band Members, last used keys and phone alerts
+---------------------------------------------
+- Band members: Settings > Band & sync > "Band members" lists everyone grouped by
+  their part (guitarists together, drummers together). It is not a hierarchy.
+- Last used key: when a song is shown in Play mode, the key is remembered per
+  singer. The song list, the song page ("Key history") and the key chooser in a
+  setlist show the last used key, and warn when a key has not been used for about
+  3 months, or when the singer's keys changed since.
+- Phone alerts (Settings > Notifications > Turn on): you get an alert when a
+  friend adds or changes songs, starts playing a setlist, or adds you as a friend.
+  Alerts arrive while the app is open or in the background. On iPhone, first tap
+  Share > Add to Home Screen and open the app from your Home Screen. They need
+  the files sw.js, manifest.webmanifest and the icon-*.png files next to
+  index.html (they are in this folder). If the app is fully closed, alerts wait
+  until you open it again: alerts to a fully closed phone need a push server
+  (Firebase Cloud Messaging with a small Cloud Function), which is a separate,
+  paid-plan step that is not included.
+
+If the sound bars do not show
+-----------------------------
+Open Settings > Band & sync > "Live play". It shows whether this device shares when you play,
+whether it is listening, and who is playing. The bar never shows on the device that is playing;
+it shows on friends' devices and on your other devices signed in as you. Both must be signed in
+and in the same band, and the player must open a setlist (not only the Play chooser).
+Also reload the page (or reopen the app from the Home Screen) after uploading a new version,
+because phones keep the old version for a while.
+
+Sync works in Safari but not from the iPhone Home Screen
+-------------------------------------------------------
+The Home Screen app keeps its OWN saved data, separate from Safari. If you once pasted your Firebase
+settings inside the app in Safari, they are saved only for Safari. Fix it once: in Safari open
+Settings > Band & sync > "Save firebase.js", upload that file next to index.html, and reopen the
+Home Screen app (remove it and add it again if it still shows the old page). With firebase.js in
+place every device works. You also have to sign in once inside the Home Screen app, because it does
+not share Safari's sign-in.
+
+When the other members hear about a song
+----------------------------------------
+A song you add or edit is sent to the other members (and their phone alert appears) only after you
+tap the check button. While you are still typing or editing it stays on your device. A new song you
+cancel is never sent. The notice and the yellow Join button disappear with a short animation when the
+player stops. All scroll bars are hidden (everything still scrolls).
+
+Invite members to join your Play, and how many tiles
+-----------------------------------------------------
+- While you are in Play mode, an Invite button (on the setlist's tiles page and on every song screen)
+  lets you pick band members (everyone is ticked by default) and send them an invitation to join. They
+  are told wherever they are in the app, even while they are playing: a card slides in over the screen
+  with Join and Not now (Join makes their Play follow yours), and if their app is in the background they
+  also get a short phone alert ("Joel invites you"). An invitation lasts about 3 minutes. It needs
+  sync on and the others in your band; no new Firebase rules are needed.
+- On wide screens (about 1140 pixels and more) a grid button in the header asks "How many tiles do you
+  want to see?" (1 to 4, as many as fit the screen). The list gets wider and shows that many tiles
+  side by side. The choice is remembered on that device.
+
+Who is with you in Play mode
+-----------------------------
+In Play mode a small strip shows the members who are in the same setlist, each with their picture and
+name ("Joined you" if you were there first, otherwise "With you"). It is on the tiles page and stays at
+the top of every song screen. When someone joins, a small notice with their name slides in ("Mia joined
+you") and fades away by itself. People in other setlists never show up.
+
+Chat and reactions (Play mode only)
+-----------------------------------
+In Play mode a Chat button (on the setlist's tiles page and on every song screen) opens a chat for
+the members who are in that same setlist. Joel in setlist A and Mia in setlist B cannot see each
+other's messages: each setlist is its own room, and the app only listens to the room of the setlist you
+are playing. Outside Play mode there is no chat at all. There are quick reaction emojis (they float up
+on everyone's screen in that setlist), a badge and a short preview when a message arrives while the chat
+is closed. Messages tidy themselves away after about 3 hours, reactions after 2 minutes. No new
+Firebase rules are needed. Note: the separation is done by the app; it is not a server rule, so it is
+meant for privacy between setlists inside your own band, not as a security boundary.
+
+Playing really means playing
+----------------------------
+A person only shows as playing while their app keeps reporting in. The app stops saying "playing" when
+the screen has been in the background for about 2 minutes, or has not been touched for 45 minutes (it
+starts again as soon as the person comes back or touches the screen). A record left behind by an app that
+was closed or crashed is ignored once its last report is older than a few minutes, and it is cleaned
+away by whoever sees it. If your own other device is wrongly shown as playing, Settings > Band & sync >
+Live play has a "Remove it" button.
+
+Key pad in Play mode
+--------------------
+When a song is open in Play mode, a soft sustained pad plays the key shown for that song (root, fifth and
+octave, so it suits any chord in that key). When you go to the next or previous song with a different key,
+the old key fades out while the new one fades in, so there is no click or jump. In a group of songs the
+first song's key sounds; tap another song's key tile to hear that one instead. The speaker button at the
+top of the Play screen mutes it (the choice is remembered on that device). The pad stops when you close
+the song, leave Play mode or put the app in the background. Phones only start sound after a touch, so
+the first song opens silent only if the phone has not been touched yet.
+
+Good to know
+------------
+- Songs from friends are combined on every device and saved there too. The
+  same song (same title, same artist or no artist written) is kept once, with
+  everyone's singers and keys put together.
+- Songs show "Added by <name>" when a friend added them.
+- Everyone in a band can see and change the band's songs and setlists. The
+  newest change wins if two people edit the same song at the same moment.
+- Your nickname starts as the first word of your email (anna.lee@... becomes
+  Anna). Change it any time in Settings > Band & sync > "You". Use ONE short word
+  your friends will recognize (Maria, PastorJo): it shows on the band members list and as
+  "Added by" on songs, and long ones are shortened there. You can also choose
+  your part in the band (guitarist, drummer, ...) there.
+- Friends are found by exact email only; nobody can browse a list of people.
+- If you are already in a band with friends and someone else asks you, you can
+  accept; if you are on your own, it is instant. If you are in a band with
+  other people, the app asks before you switch.
+- The settings in firebase.js are not secret passwords. They only point the app
+  to your project. Sign-in and the rules protect the data.
+- Costs: the free Firebase plan is far above what a church band uses.
+
+If something does not work
+--------------------------
+- Tap "Check connection" (Settings > Band & sync, under the sign-in form). It
+  says in plain words which step fails.
+- "No connection to the online service": open the app from your website
+  address (https://...), not by double-clicking index.html on your computer
+  (sign-in does not work from a file). Then check the values in firebase.js,
+  and try mobile data or another browser (Wi-Fi, ad blockers or a VPN can block
+  Google).
+- "Email sign-in is not switched on": do step 2 again.
+- "The online database refused access": do step 4 again and press Publish.
+- "Nobody has registered with that email yet": your friend must register first;
+  check the spelling.
+- The app says sync is "not switched on yet": firebase.js still has its PASTE_
+  values, or was not uploaded next to index.html.
